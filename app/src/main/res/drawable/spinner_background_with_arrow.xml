@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- الخلفية الرئيسية -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" /> <!-- لون الخلفية -->
+            <stroke
+                android:width="2dp"
+                android:color="@color/primary" /> <!-- الإطار -->
+            <corners android:radius="8dp" /> <!-- الزوايا الدائرية -->
+        </shape>
+    </item>
+
+    <item android:drawable="@drawable/ic_arrow_down"
+    android:gravity="end|center_vertical"
+    android:right="16dp" />
+</layer-list>

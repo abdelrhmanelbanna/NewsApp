@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#39A552</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray">#79828B</color>
+
+    <color name="red">#C81C22</color>
+    <color name="blue">#003E8F</color>
+    <color name="pink">#EB1E78</color>
+    <color name="brawn">#CE7D48</color>
+    <color name="babyBlue">#4881CE</color>
+    <color name="yellow">#F0D252</color>
+
+
+</resources>
