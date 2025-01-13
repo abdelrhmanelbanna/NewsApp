@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -35,10 +36,14 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 }
 
 dependencies {
+//    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+//    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
+
     implementation ("com.makeramen:roundedimageview:2.3.0")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")

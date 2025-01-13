@@ -7,9 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.core.view.isVisible
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.example.newsapp.R
+import com.example.newsapp.databinding.FragmentNewsBinding
 import com.example.newsapp.model.Category
 import com.example.newsapplication.Constants
 import com.example.newsapplication.api.ApiManager
@@ -22,112 +27,93 @@ import retrofit2.Response
 
 class NewsFragment(val category: Category) : Fragment() {
 
-    lateinit var tabLayout : TabLayout
-    lateinit var processBar : ProgressBar
-    lateinit var recyclerView: RecyclerView
+
+    lateinit var viewModel: NewsViewModel
+    lateinit var viewDataBinding: FragmentNewsBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this).get(NewsViewModel::class.java)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_news,container,false)
+//        return inflater.inflate(R.layout.fragment_news,container,false)
+        viewDataBinding =
+            DataBindingUtil.inflate(inflater, R.layout.fragment_news, container, false)
+        return viewDataBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.e("category",category.id)
+        Log.e("category", category.id)
         initView()
 
-        getNewsSources()
+        viewModel.getNewsSources(category)
     }
+
     val adapter = NewsAdapter(null)
-    fun initView(){
-        tabLayout = requireView().findViewById(R.id.tabLayout)
-        processBar = requireView().findViewById(R.id.progressBar)
-        recyclerView = requireView().findViewById(R.id.recyclerView)
 
-        recyclerView.adapter = adapter
+    fun initView() {
 
+        viewDataBinding.recyclerView.adapter = adapter
 
-    }
+        viewModel.processBarVisibility.observe(viewLifecycleOwner, Observer { processBarVisiable ->
+            if (processBarVisiable) {
+                viewDataBinding.progressBar.isVisible = true
+            } else {
+                viewDataBinding.progressBar.isVisible = false
+            }
+        })
 
-    private fun getNewsSources() {
-        ApiManager.getApis().getSources(Constants.apiKey, category.id)
-            .enqueue( object : retrofit2.Callback<SourcesResponse>{
-                override fun onResponse(call: Call<SourcesResponse>,
-                                        response: Response<SourcesResponse>
-                ) {
+        viewModel.sourcesResponse.observe(viewLifecycleOwner, Observer { soursesResponse ->
+            addSourcesToTabLayout(soursesResponse)
+        })
 
-                    // Log.e("responseData",response.body().toString())
+        viewModel.newsResponse.observe(viewLifecycleOwner, Observer { newsResponse ->
+            adapter.changeData(newsResponse)
+        })
 
-                    processBar.isVisible=false
-                    addSourcesToTabLayout(response.body()?.sources)
-                }
-
-                override fun onFailure(call: Call<SourcesResponse>, t: Throwable) {
-                    processBar.isVisible=false
-                    Log.e("error",t.localizedMessage)
-                }
-
-
-            })
 
     }
 
     private fun addSourcesToTabLayout(sources: List<SourcesItem?>?) {
 
-        sources?.forEach{
+        sources?.forEach {
 
-            val tab= tabLayout.newTab()
+            val tab = viewDataBinding.tabLayout.newTab()
             tab.setText(it?.name)
             tab.tag = sources
-            tabLayout.addTab(tab)
+            viewDataBinding.tabLayout.addTab(tab)
 
         }
 
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener{
+        viewDataBinding.tabLayout.addOnTabSelectedListener(object :
+            TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                val source = sources?.get(tab?.position?:0)
+                val source = sources?.get(tab?.position ?: 0)
 
-                getNewsBySource(source)
+                viewModel.getNewsBySource(source)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
-                val source = sources?.get(tab?.position?:0)
+                val source = sources?.get(tab?.position ?: 0)
                 //   val source  = tab?.tag as SourcesItem
 
-                getNewsBySource(source)
+                viewModel.getNewsBySource(source)
             }
 
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                val source = sources?.get(tab?.position?:0)
-                getNewsBySource(source)
+                val source = sources?.get(tab?.position ?: 0)
+                viewModel.getNewsBySource(source)
             }
 
         })
-        tabLayout.getTabAt(0)?.select()
+        viewDataBinding.tabLayout.getTabAt(0)?.select()
     }
 
-    private fun getNewsBySource(source: SourcesItem?) {
-
-        ApiManager.getApis().getNews(Constants.apiKey,source?.id?:"")
-            .enqueue(object : retrofit2.Callback<NewsResponse>{
-
-                override fun onResponse(call: Call<NewsResponse>,
-                                        response: Response<NewsResponse>
-                ) {
-                    processBar.isVisible = false
-                    adapter.changeData(response.body()?.articles)
-                }
-
-                override fun onFailure(call: Call<NewsResponse>, t: Throwable) {
-                    processBar.isVisible = false
-                }
-
-
-            })
-
-    }
 
 }
